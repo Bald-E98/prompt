@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Prompts - A Collection of Creative Visuals</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Light mode - Warm palette */
+            --bg-light: #faf7f2;
+            --bg-secondary: #f3ede5;
+            --text-dark: #2c2416;
+            --text-muted: #6b5d52;
+            --card-bg: #fff9f3;
+            --accent-primary: #c97c5c;
+            --accent-secondary: #d4a574;
+            --accent-tertiary: #e8c4a0;
+            --border-color: #e8ddd3;
+            
+            /* Dark mode - Warm palette */
+            --dark-bg: #1a1410;
+            --dark-bg-secondary: #2a241c;
+            --dark-text: #f5f1eb;
+            --dark-text-muted: #b8a899;
+            --dark-card-bg: #2a241c;
+            --dark-accent-primary: #e89968;
+            --dark-accent-secondary: #d4a574;
+            --dark-accent-tertiary: #8b6f54;
+            --dark-border-color: #3d3530;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        body.dark-mode {
+            background: var(--dark-bg);
+            color: var(--dark-text);
+        }
+
+        /* Header */
+        header {
+            position: relative;
+            padding: 1.5rem 1.5rem 1.25rem 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            transition: border-color 0.3s ease;
+        }
+
+        body.dark-mode header {
+            border-bottom-color: var(--dark-border-color);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 400;
+            margin-bottom: 1rem;
+        }
+
+        body.dark-mode .subtitle {
+            color: var(--dark-text-muted);
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 0.6rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .search-box {
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            background: var(--card-bg);
+            color: var(--text-dark);
+            font-size: 0.9rem;
+            width: 100%;
+            max-width: 320px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        body.dark-mode .search-box {
+            background: var(--dark-card-bg);
+            border-color: var(--dark-border-color);
+            color: var(--dark-text);
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(201, 124, 92, 0.1);
+        }
+
+        body.dark-mode .search-box:focus {
+            border-color: var(--dark-accent-primary);
+            box-shadow: 0 0 0 3px rgba(232, 153, 104, 0.15);
+        }
+
+        .filter-chips {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .chip {
+            padding: 0.4rem 0.8rem;
+            border: 1px solid var(--border-color);
+            border-radius: 2rem;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .chip {
+            background: var(--dark-bg-secondary);
+            border-color: var(--dark-border-color);
+            color: var(--dark-text);
+        }
+
+        .chip:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .chip.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        body.dark-mode .chip.active {
+            background: var(--dark-accent-primary);
+            border-color: var(--dark-accent-primary);
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 0.1rem;
+            right: 0.5rem;
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            color: white;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(201, 124, 92, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        body.dark-mode .theme-toggle {
+            background: var(--dark-accent-primary);
+            box-shadow: 0 4px 12px rgba(232, 153, 104, 0.25);
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(201, 124, 92, 0.35);
+        }
+
+        body.dark-mode .theme-toggle:hover {
+            box-shadow: 0 6px 20px rgba(232, 153, 104, 0.35);
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+
+        /* Main content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            animation: fadeInGrid 0.6s ease;
+        }
+
+        @keyframes fadeInGrid {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Card */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark-mode .card {
+            background: var(--dark-card-bg);
+            border-color: var(--dark-border-color);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(201, 124, 92, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        body.dark-mode .card::before {
+            background: radial-gradient(circle, rgba(232, 153, 104, 0.15) 0%, transparent 70%);
+        }
+
+        .card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-6px);
+            box-shadow: 0 12px 32px rgba(201, 124, 92, 0.12);
+        }
+
+        body.dark-mode .card:hover {
+            border-color: var(--dark-accent-primary);
+            box-shadow: 0 12px 32px rgba(232, 153, 104, 0.08);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-category {
+            display: inline-block;
+            background: rgba(201, 124, 92, 0.1);
+            color: var(--accent-primary);
+            padding: 0.35rem 0.75rem;
+            border-radius: 0.35rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            width: fit-content;
+        }
+
+        body.dark-mode .card-category {
+            background: rgba(232, 153, 104, 0.15);
+            color: var(--dark-accent-primary);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .card-prompt {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            flex-grow: 1;
+            word-break: break-word;
+        }
+
+        body.dark-mode .card-prompt {
+            color: var(--dark-text-muted);
+        }
+
+        .card-footer {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .copy-btn {
+            flex: 1;
+            padding: 0.65rem 1rem;
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            border-radius: 0.4rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        body.dark-mode .copy-btn {
+            background: var(--dark-accent-primary);
+        }
+
+        .copy-btn:hover {
+            background: var(--accent-secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(201, 124, 92, 0.2);
+        }
+
+        body.dark-mode .copy-btn:hover {
+            background: var(--dark-accent-secondary);
+            box-shadow: 0 8px 16px rgba(232, 153, 104, 0.15);
+        }
+
+        .copy-btn.copied {
+            background: var(--accent-tertiary);
+        }
+
+        body.dark-mode .copy-btn.copied {
+            background: var(--dark-accent-tertiary);
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        body.dark-mode .empty-state {
+            color: var(--dark-text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            margin-top: 3rem;
+        }
+
+        body.dark-mode footer {
+            border-top-color: var(--dark-border-color);
+            color: var(--dark-text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .search-box {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>AI Image Prompts</h1>
+        <p class="subtitle">A curated collection of creative prompts for image generation</p>
+        
+        <div class="controls">
+            <input type="text" class="search-box" id="searchBox" placeholder="Search prompts...">
+        </div>
+
+        <div class="filter-chips" id="filterChips"></div>
+    </header>
+
+    <button class="theme-toggle" id="themeToggle">🌙</button>
+
+    <div class="container">
+        <div class="grid" id="grid"></div>
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-state-icon">✨</div>
+            <p>No prompts found. Try a different search.</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>Add new prompts from the admin panel</p>
+    </footer>
+
+    <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // Firebase Configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyAP7GL3GnpMEXB3IXfweUWyrCvWxkxvOqM",
+    authDomain: "prompt-83be8.firebaseapp.com",
+    projectId: "prompt-83be8",
+    storageBucket: "prompt-83be8.firebasestorage.app",
+    messagingSenderId: "667798558559",
+    appId: "1:667798558559:web:161bc9d1388cf0a37688ea"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const gridEl = document.getElementById('grid');
+  const searchBox = document.getElementById('searchBox');
+  const filterChips = document.getElementById('filterChips');
+  const emptyState = document.getElementById('emptyState');
+  const themeToggle = document.getElementById('themeToggle');
+  
+  let allData = [];
+  let activeFilter = null;
+  let categories = new Set();
+
+  // Theme Toggle
+  themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    themeToggle.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+  });
+
+  // Load saved theme
+  if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark-mode');
+    themeToggle.textContent = '☀️';
+  }
+
+  // Render cards
+  const renderCards = () => {
+    const searchTerm = searchBox.value.toLowerCase();
+    
+    const filtered = allData.filter(item => {
+      const matchesSearch = item.prompt.toLowerCase().includes(searchTerm) || 
+                           (item.category || 'general').toLowerCase().includes(searchTerm);
+      const matchesFilter = !activeFilter || item.category === activeFilter;
+      return matchesSearch && matchesFilter;
+    });
+
+    gridEl.innerHTML = '';
+    
+    if (filtered.length === 0) {
+      emptyState.style.display = 'block';
+      return;
+    }
+    
+    emptyState.style.display = 'none';
+
+    filtered.forEach((data) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <span class="card-category">${data.category || 'General'}</span>
+        <img src="${data.imageUrl}" class="card-image" alt="Prompt image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22320%22 height=%22240%22%3E%3Crect fill=%22%23ccc%22 width=%22320%22 height=%22240%22/%3E%3C/svg%3E'">
+        <p class="card-prompt">${data.prompt}</p>
+        <div class="card-footer">
+            <button class="copy-btn" onclick="copyPrompt(event)">
+                Copy Prompt
+            </button>
+        </div>
+      `;
+      
+      // Store prompt in data attribute for copying
+      card.dataset.prompt = data.prompt;
+      gridEl.appendChild(card);
+    });
+  };
+
+  // Copy to clipboard
+  window.copyPrompt = (e) => {
+    const card = e.target.closest('.card');
+    const prompt = card.dataset.prompt;
+    
+    navigator.clipboard.writeText(prompt).then(() => {
+      e.target.textContent = 'Copied!';
+      e.target.classList.add('copied');
+      
+      setTimeout(() => {
+        e.target.textContent = 'Copy Prompt';
+        e.target.classList.remove('copied');
+      }, 2000);
+    });
+  };
+
+  // Real-time listener for Firebase data
+  const q = query(collection(db, "ai_prompts"), orderBy("timestamp", "desc"));
+  
+  onSnapshot(q, (snapshot) => {
+    allData = [];
+    categories.clear();
+    
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      allData.push(data);
+      if (data.category) categories.add(data.category);
+    });
+
+    // Build filter chips
+    filterChips.innerHTML = '<button class="chip active" onclick="clearFilter()">All</button>';
+    categories.forEach(cat => {
+      const chip = document.createElement('button');
+      chip.className = 'chip';
+      chip.textContent = cat;
+      chip.onclick = (e) => filterByCategory(cat, e.target);
+      filterChips.appendChild(chip);
+    });
+
+    renderCards();
+  });
+
+  // Filter functions
+  window.filterByCategory = (category, element) => {
+    activeFilter = category;
+    document.querySelectorAll('.chip').forEach(chip => chip.classList.remove('active'));
+    element.classList.add('active');
+    renderCards();
+  };
+
+  window.clearFilter = () => {
+    activeFilter = null;
+    document.querySelectorAll('.chip').forEach(chip => chip.classList.remove('active'));
+    document.querySelectorAll('.chip')[0].classList.add('active');
+    renderCards();
+  };
+
+  // Search listener
+  searchBox.addEventListener('input', renderCards);
+</script>
+
+</body>
+</html>

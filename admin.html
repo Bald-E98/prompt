@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Admin Panel</title>
+    <style>
+        :root {
+            --primary-bg: #0f172a;
+            --accent-color: #38bdf8;
+            --text-main: #f1f5f9;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+        }
+
+        .admin-container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        /* The 80/20 Split Container */
+        .content-box {
+            display: flex;
+            flex-direction: column;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            min-height: 300px;
+        }
+
+        /* Image Upload Section (80%) */
+        .image-section {
+            flex: 8;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #1e293b;
+            padding: 20px;
+            position: relative;
+        }
+
+        .image-section input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-placeholder {
+            text-align: center;
+            pointer-events: none;
+        }
+
+        #preview-img {
+            max-width: 100%;
+            max-height: 200px;
+            display: none;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        /* Prompt Section (20%) */
+        .prompt-section {
+            flex: 2;
+            background: #0f172a;
+            border-top: 1px solid var(--border-color);
+            padding: 10px;
+        }
+
+        .prompt-section textarea {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            resize: none;
+            font-size: 14px;
+            outline: none;
+        }
+
+        /* Main Action Button */
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--accent-color);
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .submit-btn:active:not(:disabled) {
+            transform: scale(0.98);
+            background-color: #7dd3fc;
+        }
+
+        .label-text {
+            font-size: 11px;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .status-message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 13px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #10b981;
+            color: white;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #ef4444;
+            color: white;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Prompt Admin Panel</h1>
+
+    <div class="admin-container">
+        <div class="content-box">
+            <!-- 80% Image Section -->
+            <div class="image-section">
+                <span class="label-text">Media Upload (80%)</span>
+                <div class="upload-placeholder">
+                    <p>Tap to select image</p>
+                    <img id="preview-img" src="#" alt="Preview">
+                </div>
+                <input type="file" id="imageInput" accept="image/*">
+            </div>
+
+            <!-- 20% Prompt Section -->
+            <div class="prompt-section">
+                <span class="label-text">Prompt Details (20%)</span>
+                <textarea id="promptInput" placeholder="Type or paste prompt here..."></textarea>
+            </div>
+        </div>
+
+        <button class="submit-btn" id="uploadBtn">UPLOAD / ADD TO SITE</button>
+        <div class="status-message" id="statusMessage"></div>
+    </div>
+
+    <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // Firebase Configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyAP7GL3GnpMEXB3IXfweUWyrCvWxkxvOqM",
+    authDomain: "prompt-83be8.firebaseapp.com",
+    projectId: "prompt-83be8",
+    storageBucket: "prompt-83be8.firebasestorage.app",
+    messagingSenderId: "667798558559",
+    appId: "1:667798558559:web:161bc9d1388cf0a37688ea"
+  };
+
+  // Cloudinary Configuration
+  const CLOUDINARY_CLOUD_NAME = "dd2mtflmf";
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const imageInput = document.getElementById('imageInput');
+  const previewImg = document.getElementById('preview-img');
+  const promptInput = document.getElementById('promptInput');
+  const uploadBtn = document.getElementById('uploadBtn');
+  const statusMessage = document.getElementById('statusMessage');
+
+  // Preview Logic
+  imageInput.addEventListener('change', function() {
+    const file = this.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImg.src = e.target.result;
+        previewImg.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  const showStatus = (message, type) => {
+    statusMessage.textContent = message;
+    statusMessage.className = 'status-message ' + type;
+    if (type === 'success') {
+      setTimeout(() => {
+        statusMessage.style.display = 'none';
+      }, 3000);
+    }
+  };
+
+  // Upload Logic
+  uploadBtn.addEventListener('click', async () => {
+    const file = imageInput.files[0];
+    const promptText = promptInput.value.trim();
+
+    if (!file || !promptText) {
+      showStatus('Please select an image and enter a prompt!', 'error');
+      return;
+    }
+
+    uploadBtn.disabled = true;
+    uploadBtn.innerText = "UPLOADING...";
+
+    try {
+      // 1. Upload to Cloudinary (unsigned)
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'ml_default');
+      formData.append('folder', 'ai-prompts');
+
+      console.log('Uploading to Cloudinary...');
+      const cloudinaryResponse = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+        {
+          method: 'POST',
+          body: formData
+        }
+      );
+
+      const responseData = await cloudinaryResponse.json();
+      
+      if (!cloudinaryResponse.ok) {
+        console.error('Cloudinary error:', responseData);
+        throw new Error(responseData.error?.message || 'Upload preset "ml_default" not found. Create it in Cloudinary settings as unsigned.');
+      }
+
+      console.log('Cloudinary response:', responseData);
+      const imageUrl = responseData.secure_url;
+
+      // 2. Save to Firestore
+      console.log('Saving to Firebase...');
+      await addDoc(collection(db, "ai_prompts"), {
+        prompt: promptText,
+        imageUrl: imageUrl,
+        timestamp: serverTimestamp(),
+        category: "User Uploaded"
+      });
+
+      showStatus('✓ Success! Added to site', 'success');
+      imageInput.value = '';
+      promptInput.value = '';
+      previewImg.style.display = 'none';
+    } catch (error) {
+      console.error('Upload error:', error);
+      showStatus('Error: ' + error.message, 'error');
+    } finally {
+      uploadBtn.disabled = false;
+      uploadBtn.innerText = "UPLOAD / ADD TO SITE";
+    }
+  });
+</script>
+
+</body>
+</html>
