@@ -42,7 +42,52 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
 
-        /* The 80/20 Split Container */
+        /* AI Type Selector */
+        .ai-selector {
+            margin-bottom: 20px;
+        }
+
+        .ai-selector label {
+            display: block;
+            color: #64748b;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .ai-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .ai-option {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px 15px;
+            background: #0f172a;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-main);
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .ai-option:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .ai-option.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #000;
+        }
+
+        /* Image Preview Section */
         .content-box {
             display: flex;
             flex-direction: column;
@@ -53,7 +98,6 @@
             min-height: 300px;
         }
 
-        /* Image Upload Section (80%) */
         .image-section {
             flex: 8;
             display: flex;
@@ -78,15 +122,59 @@
             pointer-events: none;
         }
 
-        #preview-img {
-            max-width: 100%;
-            max-height: 200px;
-            display: none;
-            border-radius: 4px;
-            margin-top: 10px;
+        .upload-placeholder p {
+            margin: 0 0 15px 0;
+            color: #94a3b8;
         }
 
-        /* Prompt Section (20%) */
+        .preview-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .preview-item {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-item .remove-btn {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .preview-item:hover .remove-btn {
+            opacity: 1;
+        }
+
+        /* Prompt Section */
         .prompt-section {
             flex: 2;
             background: #0f172a;
@@ -129,14 +217,6 @@
             background-color: #7dd3fc;
         }
 
-        .label-text {
-            font-size: 11px;
-            color: #64748b;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-            display: block;
-        }
-
         .status-message {
             margin-top: 15px;
             padding: 10px;
@@ -157,6 +237,12 @@
             color: white;
             display: block;
         }
+
+        .file-count {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -164,20 +250,31 @@
     <h1>Prompt Admin Panel</h1>
 
     <div class="admin-container">
+        <!-- AI Type Selector -->
+        <div class="ai-selector">
+            <label>Select AI Model:</label>
+            <div class="ai-options">
+                <button class="ai-option active" data-ai="ChatGPT">ChatGPT</button>
+                <button class="ai-option" data-ai="Gemini">Gemini</button>
+                <button class="ai-option" data-ai="Claude">Claude</button>
+                <button class="ai-option" data-ai="Midjourney">Midjourney</button>
+                <button class="ai-option" data-ai="DALL-E">DALL-E</button>
+            </div>
+        </div>
+
         <div class="content-box">
-            <!-- 80% Image Section -->
+            <!-- Image Upload Section -->
             <div class="image-section">
-                <span class="label-text">Media Upload (80%)</span>
                 <div class="upload-placeholder">
-                    <p>Tap to select image</p>
-                    <img id="preview-img" src="#" alt="Preview">
+                    <p>Tap to select images (2-3 recommended)</p>
+                    <div class="preview-container" id="previewContainer"></div>
+                    <p class="file-count" id="fileCount"></p>
                 </div>
-                <input type="file" id="imageInput" accept="image/*">
+                <input type="file" id="imageInput" accept="image/*" multiple>
             </div>
 
-            <!-- 20% Prompt Section -->
+            <!-- Prompt Section -->
             <div class="prompt-section">
-                <span class="label-text">Prompt Details (20%)</span>
                 <textarea id="promptInput" placeholder="Type or paste prompt here..."></textarea>
             </div>
         </div>
@@ -207,23 +304,54 @@
   const db = getFirestore(app);
 
   const imageInput = document.getElementById('imageInput');
-  const previewImg = document.getElementById('preview-img');
+  const previewContainer = document.getElementById('previewContainer');
+  const fileCount = document.getElementById('fileCount');
   const promptInput = document.getElementById('promptInput');
   const uploadBtn = document.getElementById('uploadBtn');
   const statusMessage = document.getElementById('statusMessage');
+  const aiOptions = document.querySelectorAll('.ai-option');
+  
+  let selectedAI = 'ChatGPT';
+  let selectedFiles = [];
+
+  // AI Selection
+  aiOptions.forEach(option => {
+    option.addEventListener('click', () => {
+      aiOptions.forEach(opt => opt.classList.remove('active'));
+      option.classList.add('active');
+      selectedAI = option.dataset.ai;
+    });
+  });
 
   // Preview Logic
   imageInput.addEventListener('change', function() {
-    const file = this.files[0];
-    if (file) {
+    selectedFiles = Array.from(this.files);
+    updatePreview();
+  });
+
+  const updatePreview = () => {
+    previewContainer.innerHTML = '';
+    selectedFiles.forEach((file, index) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        previewImg.src = e.target.result;
-        previewImg.style.display = 'block';
+        const preview = document.createElement('div');
+        preview.className = 'preview-item';
+        preview.innerHTML = `
+          <img src="${e.target.result}" alt="Preview">
+          <button class="remove-btn" onclick="removeImage(${index})">&times;</button>
+        `;
+        previewContainer.appendChild(preview);
       };
       reader.readAsDataURL(file);
-    }
-  });
+    });
+    fileCount.textContent = `${selectedFiles.length} image${selectedFiles.length !== 1 ? 's' : ''} selected`;
+  };
+
+  window.removeImage = (index) => {
+    selectedFiles.splice(index, 1);
+    imageInput.value = '';
+    updatePreview();
+  };
 
   const showStatus = (message, type) => {
     statusMessage.textContent = message;
@@ -237,11 +365,10 @@
 
   // Upload Logic
   uploadBtn.addEventListener('click', async () => {
-    const file = imageInput.files[0];
     const promptText = promptInput.value.trim();
 
-    if (!file || !promptText) {
-      showStatus('Please select an image and enter a prompt!', 'error');
+    if (selectedFiles.length === 0 || !promptText) {
+      showStatus('Please select images and enter a prompt!', 'error');
       return;
     }
 
@@ -249,44 +376,46 @@
     uploadBtn.innerText = "UPLOADING...";
 
     try {
-      // 1. Upload to Cloudinary (unsigned)
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', 'ml_default');
-      formData.append('folder', 'ai-prompts');
+      const imageUrls = [];
 
-      console.log('Uploading to Cloudinary...');
-      const cloudinaryResponse = await fetch(
-        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
-        {
-          method: 'POST',
-          body: formData
+      // Upload all images to Cloudinary
+      for (const file of selectedFiles) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', 'ml_default');
+        formData.append('folder', 'ai-prompts');
+
+        const cloudinaryResponse = await fetch(
+          `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+          {
+            method: 'POST',
+            body: formData
+          }
+        );
+
+        const responseData = await cloudinaryResponse.json();
+        
+        if (!cloudinaryResponse.ok) {
+          throw new Error(responseData.error?.message || 'Image upload failed');
         }
-      );
 
-      const responseData = await cloudinaryResponse.json();
-      
-      if (!cloudinaryResponse.ok) {
-        console.error('Cloudinary error:', responseData);
-        throw new Error(responseData.error?.message || 'Upload preset "ml_default" not found. Create it in Cloudinary settings as unsigned.');
+        imageUrls.push(responseData.secure_url);
       }
 
-      console.log('Cloudinary response:', responseData);
-      const imageUrl = responseData.secure_url;
-
-      // 2. Save to Firestore
-      console.log('Saving to Firebase...');
+      // Save to Firestore with all image URLs
       await addDoc(collection(db, "ai_prompts"), {
         prompt: promptText,
-        imageUrl: imageUrl,
-        timestamp: serverTimestamp(),
-        category: "User Uploaded"
+        imageUrls: imageUrls,
+        aiModel: selectedAI,
+        timestamp: serverTimestamp()
       });
 
       showStatus('✓ Success! Added to site', 'success');
       imageInput.value = '';
       promptInput.value = '';
-      previewImg.style.display = 'none';
+      selectedFiles = [];
+      previewContainer.innerHTML = '';
+      fileCount.textContent = '';
     } catch (error) {
       console.error('Upload error:', error);
       showStatus('Error: ' + error.message, 'error');
