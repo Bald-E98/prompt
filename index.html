@@ -36,6 +36,9 @@
             color: var(--text-dark);
             transition: background-color 0.3s ease, color 0.3s ease;
             line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
         body.dark-mode {
@@ -177,6 +180,8 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
+            width: 100%;
+            flex-grow: 1;
         }
 
         .ai-section {
@@ -384,15 +389,37 @@
         /* Footer */
         footer {
             text-align: center;
-            padding: 2rem;
-            color: var(--text-muted);
+            padding: 0.75rem 1.5rem;
             border-top: 1px solid var(--border-color);
-            margin-top: 3rem;
+            margin-top: auto;
+            background: var(--bg-light);
         }
 
         body.dark-mode footer {
             border-top-color: var(--dark-border-color);
-            color: var(--dark-text-muted);
+            background: var(--dark-bg);
+        }
+
+        footer a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        body.dark-mode footer a {
+            color: var(--dark-accent-primary);
+        }
+
+        footer a:hover {
+            color: var(--accent-secondary);
+        }
+
+        body.dark-mode footer a:hover {
+            color: var(--dark-accent-secondary);
         }
 
         /* Responsive */
@@ -426,10 +453,11 @@
     <button class="theme-toggle" id="themeToggle">🌙</button>
 
     <div class="sections-container" id="sectionsContainer"></div>
+
     <footer>
-    <a href="https://bald-e.neocities.org/" target="_blank">
-        @BALD-E 2026
-    </a>
+        <a href="https://bald-e.neocities.org/" target="_blank">
+            @BALD-E 2026
+        </a>
     </footer>
 
     <script type="module">
